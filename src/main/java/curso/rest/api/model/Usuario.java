@@ -1,12 +1,16 @@
 package curso.rest.api.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +24,19 @@ public class Usuario implements Serializable{
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	private String login;
+	private String senha;
+	private String nome;
+	
+	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
+	private List<Telefone>telefones = new ArrayList<Telefone>();
+	
+	public void setTelefones(List<Telefone> telefones) {
+		this.telefones = telefones;
+	}
+	
+	public List<Telefone> getTelefones() {
+		return telefones;
+	}
 	
 	public Long getId() {
 		return id;
@@ -56,10 +73,7 @@ public class Usuario implements Serializable{
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
-
-	private String senha;
-	private String nome;
-	
+		
 	@Override
 	public int hashCode() {
 		return Objects.hash(id);
