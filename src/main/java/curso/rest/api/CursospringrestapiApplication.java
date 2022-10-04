@@ -29,8 +29,8 @@ public class CursospringrestapiApplication implements WebMvcConfigurer {
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("*")
-		.allowedMethods("POST", "PUT", "DELETE", "GET")
-		.allowedOrigins("localhost:8080");
+		.allowedMethods("*")
+		.allowedOrigins("*");
 	}	
 
 }

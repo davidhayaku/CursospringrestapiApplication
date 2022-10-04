@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import curso.rest.api.model.Usuario;
 import curso.rest.api.repository.UsuarioRepository;
 
-@CrossOrigin(origins = "localhost:8080")
+@CrossOrigin(origins = "*")
 @RestController //aqui define arquitetura REST
 @RequestMapping(value = "/usuario")
 public class IndexController {
