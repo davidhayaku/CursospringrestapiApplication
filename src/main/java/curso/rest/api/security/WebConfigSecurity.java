@@ -29,8 +29,7 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter{
 		
 		//Ativando a permissão para acesso à página inicial
 		.disable().authorizeRequests().antMatchers("/").permitAll()
-		.antMatchers("/index").permitAll()
-		
+		.antMatchers("/index", "/recuperar/**").permitAll()		
 		//URL de Logout - redireciona após logoff
 		.anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
 		

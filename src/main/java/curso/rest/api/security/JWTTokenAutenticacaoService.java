@@ -6,9 +6,7 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -63,8 +61,10 @@ public class JWTTokenAutenticacaoService {
 		
 		if(user != null) {
 			
-			Usuario usuario = ApplicationContextLoad.getApplicationContext()
-					.getBean(UsuarioRepository.class).findUserByLogin(user);
+			Usuario usuario = ApplicationContextLoad
+					.getApplicationContext()
+					.getBean(UsuarioRepository.class)
+					.findUserByLogin(user);
 			
 			//Retornar usuario logado			
 			if(usuario != null) {
