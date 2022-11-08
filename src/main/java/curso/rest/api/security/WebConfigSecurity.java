@@ -21,35 +21,37 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter{
 	@Autowired
 	private ImplementacaoUserDetailsService implementacaoUserDetailsService;
 	
-	//Configura as solicitações de acesso http
+	//Configura as solicitações de acesso por http
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		//ativando proteção contra usuários não validados por token
+
+		//Ativando a proteção contra usuários não validados por token
 		http.csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-		
-		//Ativando a permissão para acesso à página inicial
+		//Ativando a permissão de acesso para a página inicial do sistema
 		.disable().authorizeRequests().antMatchers("/").permitAll()
-		.antMatchers("/index", "/recuperar/**").permitAll()		
-		//URL de Logout - redireciona após logoff
-		.anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
+		.antMatchers("/index").permitAll()
 		
+		//URL de Logout - Redireciona após usuario deslogar 
+		.anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
 		//Mapeia URL de Logout e invalida o usuário
 		.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
 		
 		//Filtra requisições de login para autenticação
 		.and().addFilterBefore(new JWTLoginFilter("/login", authenticationManager()),
 				UsernamePasswordAuthenticationFilter.class)
-		
-		//Filtra demais requisições para verificar a presença do TOKEN JWT no HEADER HTTP
+			
+		//Filtra demais requisições para verificar a presença do TOKEN JWR no Header http
 		.addFilterBefore(new JWTApiAutenticacaoFilter(), 
 				UsernamePasswordAuthenticationFilter.class);
 	}
 	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		//Service que irá consultar usuario no banco de dados
+		
+		//Service que irá consultar user no banco de dados
 		auth.userDetailsService(implementacaoUserDetailsService)
-		//Padrão de codigição de senha
+		
+		//Padrão de codificação de senha
 		.passwordEncoder(new BCryptPasswordEncoder());
 	}	
 }

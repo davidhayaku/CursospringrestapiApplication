@@ -13,8 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.util.AntPathMatcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -23,7 +21,7 @@ import curso.rest.api.model.Usuario;
 //Estabelece o gerente de token
 public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter{
 
-	//Configurando o gerenciado de autenticação
+	//Configurando o gerenciador de autenticação
 	protected JWTLoginFilter(String url, AuthenticationManager authenticationManager ) {
 		//obriga autenticar a url
 		super(new AntPathRequestMatcher(url));
@@ -39,7 +37,8 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter{
 			throws AuthenticationException, IOException, ServletException {
 		
 		//está pegando o token para validar
-		Usuario user = new ObjectMapper().readValue(request.getInputStream(), Usuario.class);
+		Usuario user = new ObjectMapper().
+				readValue(request.getInputStream(), Usuario.class);
 		
 		//retorna o usuario login, senha e acesso
 		return getAuthenticationManager().
@@ -49,7 +48,8 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter{
 	}
 	 
 	@Override
-	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+	protected void successfulAuthentication(HttpServletRequest request, 
+			HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
 		new JWTTokenAutenticacaoService().addAuthentication(response, authResult.getName());
 	}
