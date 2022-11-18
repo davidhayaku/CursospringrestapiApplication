@@ -20,58 +20,72 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Component
 public class JWTTokenAutenticacaoService {
 	
+	/*Tem de validade do Token 2 dias*/
+	private static final long EXPIRATION_TIME = 172800000;
 	
-	private static final long EXPIRATION_TIME = 172800000; 	//TEMPO DE VALIDADE DO TOKEN 2 DIAS
-	private static final String SECRET = "SenhaExtremamenteSecreta";//UMA SENHA UNICA PARA COMPOR A AUTENTICACAO AJUDANDO A SEGURANÇA
-	private static final String TOKEN_PREFIX = "Bearer";//PREFIXO PADRÃO DO TOKEN
+	/*Uma senha unica para compor a autenticacao e ajudar na segurança*/
+	private static final String SECRET = "SenhaExtremamenteSecreta";
+	
+	/*Prefixo padrão de Token*/
+	private static final String TOKEN_PREFIX = "Bearer";
+	
 	private static final String HEADER_STRING = "Authorization";
 	
-	//Gerando token de autenticação e adicionando ao cabeçalho e resposta http
-	public void addAuthentication(HttpServletResponse response, String username)
-	throws IOException{
-		String JWT = Jwts.builder() //chama o gerador de token
-		.setSubject(username)//Add o usuario
-		.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))//tempo de expiração
-		.signWith(SignatureAlgorithm.HS512, SECRET).compact();//compactação e algoritmos de geração de senha
+	/*Gerando token de autenticado e adiconando ao cabeçalho e resposta Http*/
+	public void addAuthentication(HttpServletResponse response , String username) throws IOException {
 		
-		//Junta o token com o prefixo
-		String token = TOKEN_PREFIX + "" + JWT; //Bearer forma o token
+		/*Montagem do Token*/ // 
+		// Tinha que trocar de LAZY para EAGER a coleção de roles e também mapear uma role para o usuário no banco
+		String JWT = Jwts.builder() /*Chama o gerador de Token*/
+				        .setSubject(username) /*Adicona o usuario*/
+				        .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) /*Tempo de expiração*/
+				        .signWith(SignatureAlgorithm.HS512, SECRET).compact(); /*Compactação e algoritmos de geração de senha*/
 		
-		//Adiciona no cabeçalho http
-		response.addHeader(HEADER_STRING, token); //Authorization: Bearer 8w7e8w78eq78w7
+		/*Junta token com o prefixo*/
+		String token = TOKEN_PREFIX + " " + JWT; /*Bearer 87878we8we787w8e78w78e78w7e87w*/
 		
-		//Escreve token como resposta no corpo http
-		response.getWriter().write("{\"Authorization\": \""+token+"\"}");	
+		/*Adiciona no cabeçalho http*/
+		response.addHeader(HEADER_STRING, token); /*Authorization: Bearer 87878we8we787w8e78w78e78w7e87w*/
+		
+		/*Escreve token como responsta no corpo http*/
+		response.getWriter().write("{\"Authorization\": \""+token+"\"}");
+		
+	}
+	
+	
+	/*Retorna o usuário validado com token ou caso não sejá valido retorna null*/
+	public Authentication getAuhentication(HttpServletRequest request) {
+		
+		/*Pega o token enviado no cabeçalho http*/
+		
+		String token = request.getHeader(HEADER_STRING);
+		
+		if (token != null) {
+			
+			/*Faz a validação do token do usuário na requisição*/
+			String user = Jwts.parser().setSigningKey(SECRET) /*Bearer 87878we8we787w8e78w78e78w7e87w*/
+								.parseClaimsJws(token.replace(TOKEN_PREFIX, "")) /*87878we8we787w8e78w78e78w7e87w*/
+								.getBody().getSubject(); /*João Silva*/
+			if (user != null) {
+				
+				Usuario usuario = ApplicationContextLoad.getApplicationContext()
+						        .getBean(UsuarioRepository.class).findUserByLogin(user);
+				
+				if (usuario != null) {
+					
+					return new UsernamePasswordAuthenticationToken(
+							usuario.getLogin(), 
+							usuario.getSenha(),
+							usuario.getAuthorities());
+					
+				}
+			}
+			
 		}
 	
-	//Retorna o usuário validado com token ou no caso não seja válido retorna null
-	public Authentication getautAuthentication(HttpServletRequest request) {
-		
-		//Pega o token enviado no cabeçalho Http
-		String token = request.getHeader(HEADER_STRING);
-		if(token != null) {
-			//valida o token do usuário na requisição
-			String user = Jwts.parser().setSigningKey(SECRET) //recebe o token com prefixo
-					.parseClaimsJws(token.replace(TOKEN_PREFIX, ""))// retira o prefixo do token
-					.getBody().getSubject(); //retorna só o usuário
-			
-		if(user != null) {
-			Usuario usuario = ApplicationContextLoad.getApplicationContext()
-					.getBean(UsuarioRepository.class).findUserByLogin(user);
-			if(usuario != null) {
-				
-				return new UsernamePasswordAuthenticationToken(
-						usuario.getLogin(), 
-						usuario.getSenha(),
-						usuario.getAuthorities()
-						);				
-			}			
-		}		
-		}
-		return null;
+		return null; /*Não autorizado*/
 		
 	}
 	
 
-	
 }

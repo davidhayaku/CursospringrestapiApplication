@@ -18,41 +18,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import curso.rest.api.model.Usuario;
 
-//Estabelece o gerente de token
-public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter{
+/*Estabelece o nosso gerenciador de Token*/
+public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
 
-	//Configurando o gerenciador de autenticação
-	protected JWTLoginFilter(String url, AuthenticationManager authenticationManager ) {
-		//obriga autenticar a url
+
+	/*Configurando o gerenciador de autenticacao*/
+	protected JWTLoginFilter(String url, AuthenticationManager authenticationManager) {
+       
+		/*Obriga a autenticar a URL*/
 		super(new AntPathRequestMatcher(url));
+       
+       /*Gerenciador de autenticacao*/
+       setAuthenticationManager(authenticationManager);
 		
-		//gerenciador de autenticação da URL
-		setAuthenticationManager(authenticationManager);
 	}
 
-	//retorna o usuário ao processar a autenticação
+	/*Retorna o usuário ao processar a autenticação*/
 	@Override
-	public Authentication attemptAuthentication(HttpServletRequest request,
-			HttpServletResponse response)
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 			throws AuthenticationException, IOException, ServletException {
 		
-		//está pegando o token para validar
+		/*Está pegando o token para validar*/
 		Usuario user = new ObjectMapper().
 				readValue(request.getInputStream(), Usuario.class);
 		
-		//retorna o usuario login, senha e acesso
+		/*Retorna o usuario login, senha e acessos*/
 		return getAuthenticationManager().
-			authenticate(new UsernamePasswordAuthenticationToken(
-					user.getLogin(), 
-					user.getSenha()));
+				authenticate(new UsernamePasswordAuthenticationToken(user.getLogin(), user.getSenha()));
 	}
-	 
+	
 	@Override
-	protected void successfulAuthentication(HttpServletRequest request, 
-			HttpServletResponse response, FilterChain chain,
+	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
+		
 		new JWTTokenAutenticacaoService().addAuthentication(response, authResult.getName());
+	
 	}
 
-	
 }

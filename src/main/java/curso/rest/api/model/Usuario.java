@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.ConstraintMode;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -21,6 +22,8 @@ import javax.persistence.UniqueConstraint;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Getter;
 import lombok.Setter;
 @Setter
@@ -32,6 +35,7 @@ public class Usuario implements UserDetails{
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	@Column(unique = true)
 	private String login;
 	private String senha;
 	private String nome;
@@ -39,7 +43,7 @@ public class Usuario implements UserDetails{
 	@OneToMany(mappedBy = "usuario", orphanRemoval = true, cascade = CascadeType.ALL)
 	private List<Telefone>telefones = new ArrayList<Telefone>();
 
-	@OneToMany(fetch = FetchType.LAZY)
+	@OneToMany(fetch = FetchType.EAGER)
 	@JoinTable(name = "usuarios_role", uniqueConstraints = @UniqueConstraint(
 			columnNames = {"usuario_id", "role_id"}, name = "unique_role_user"), 
 			joinColumns = @JoinColumn(name = "usuario_id", referencedColumnName = "id", unique = false, table = "usuario", 
@@ -71,11 +75,11 @@ public class Usuario implements UserDetails{
 	public void setLogin(String login) {
 		this.login = login;
 	}
-
+	
 	public String getSenha() {
 		return senha;
 	}
-
+	
 	public void setSenha(String senha) {
 		this.senha = senha;
 	}
@@ -114,31 +118,37 @@ public class Usuario implements UserDetails{
 		return roles;
 	}
 
+	@JsonIgnore
 	@Override
 	public String getPassword() {
 		return this.senha;
 	}
-
+	
+	@JsonIgnore
 	@Override
 	public String getUsername() {
 		return this.login;
 	}
-
+	
+	@JsonIgnore
 	@Override
 	public boolean isAccountNonExpired() {
 		return true;
 	}
-
+	
+	@JsonIgnore
 	@Override
 	public boolean isAccountNonLocked() {
 		return true;
 	}
-
+	
+	@JsonIgnore
 	@Override
 	public boolean isCredentialsNonExpired() {
 		return true;
 	}
-
+	
+	@JsonIgnore
 	@Override
 	public boolean isEnabled() {
 		return true;

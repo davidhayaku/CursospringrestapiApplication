@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,15 +36,19 @@ public class IndexController {
 		return new ResponseEntity<Usuario>(usuario.get(), HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/index", method = RequestMethod.GET, produces = "application/json")
-	public String teste(@PathVariable (value = "id")Long id){
-		return "PASSANDO AQUI !!!!!!";
+	//Serviço Restful versão 1
+	@GetMapping(value = "/{id}", produces = "application/json", headers = "X-API-Version=v1")
+	public ResponseEntity<Usuario> buscaV1(@PathVariable (value = "id")Long id){
+		Optional<Usuario> usuario = usuarioRepository.findById(id);
+		System.out.println("Executando versão 1 da API");
+		return new ResponseEntity<Usuario>(usuario.get(), HttpStatus.OK);
 	}
 	
-	//Serviço Restful
-	@GetMapping(value = "/{id}", produces = "application/json")
-	public ResponseEntity<Usuario> busca(@PathVariable (value = "id")Long id){
+	//Serviço Restful versão 2
+	@GetMapping(value = "/{id}", produces = "application/json", headers = "X-API-Version=v2")
+	public ResponseEntity<Usuario> buscaV2(@PathVariable (value = "id")Long id){
 		Optional<Usuario> usuario = usuarioRepository.findById(id);
+		System.out.println("Executando versão 2 da API");
 		return new ResponseEntity<Usuario>(usuario.get(), HttpStatus.OK);
 	}
 	
@@ -59,7 +64,8 @@ public class IndexController {
 		for(int pos = 0; pos < usuario.getTelefones().size();pos++) {
 			usuario.getTelefones().get(pos).setUsuario(usuario);
 		}
-		
+		String senhaCriptografada = new BCryptPasswordEncoder().encode(usuario.getSenha());
+		usuario.setSenha(senhaCriptografada);
 		Usuario usuarioSalvo = usuarioRepository.save(usuario);
 		return new ResponseEntity<Usuario>(usuarioSalvo, HttpStatus.OK);
 	}
@@ -69,6 +75,12 @@ public class IndexController {
 		
 		for(int pos = 0; pos < usuario.getTelefones().size();pos++) {
 			usuario.getTelefones().get(pos).setUsuario(usuario);
+		}
+		
+		Usuario userTemporario = usuarioRepository.findUserByLogin(usuario.getLogin());
+		if(!userTemporario.getSenha().equals(usuario.getSenha())) {//senhas diferentes
+			String senhaCriptografada = new BCryptPasswordEncoder().encode(usuario.getSenha());
+			usuario.setSenha(senhaCriptografada);
 		}
 		
 		Usuario usuarioSalvo = usuarioRepository.save(usuario);
