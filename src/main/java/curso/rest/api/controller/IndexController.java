@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import curso.rest.api.model.Usuario;
 import curso.rest.api.repository.UsuarioRepository;
+import net.bytebuddy.asm.Advice.OffsetMapping.Target.AbstractReadOnlyAdapter;
 
 @CrossOrigin(origins = "*")
 @RestController //aqui define arquitetura REST
@@ -52,9 +54,14 @@ public class IndexController {
 		return new ResponseEntity<Usuario>(usuario.get(), HttpStatus.OK);
 	}
 	
+	//Se o carregamento dos usuários for um processo lento e pesado e queremos controlar ele com cache
+	//para agilizar o processo de carregamento
 	@GetMapping(value = "/", produces = "application/json")
-	public ResponseEntity<List<Usuario>>usuario(){
+	@Cacheable
+	public ResponseEntity<List<Usuario>>usuario() throws InterruptedException{
 		List<Usuario> list = (List<Usuario>)usuarioRepository.findAll();
+		
+		Thread.sleep(6000);//Segura o código por 6 segundos simulando um processo lento
 		return new ResponseEntity<List<Usuario>>(list,HttpStatus.OK);
 	}
 
